@@ -1,0 +1,42 @@
+# vaultpull.example.toml
+# Copy this file to vaultpull.toml and fill in your values.
+# vaultpull.toml is listed in .gitignore to prevent secret leakage.
+
+[vault]
+# Full address of the Vault server.
+address = "http://127.0.0.1:8200"
+
+# Vault token used for authentication.
+# Leave empty to rely on the VAULT_TOKEN environment variable.
+token = ""
+
+# KV v2 mount path (default: "secret").
+mount_path = "secret"
+
+# Path within the mount to read secrets from.
+secret_path = "myapp/production"
+
+[output]
+# Destination .env file.
+file_path = ".env"
+
+# Overwrite the file if it already exists.
+overwrite = false
+
+# Append new keys to an existing file instead of replacing it.
+append = false
+
+[audit]
+# Enable audit logging.
+enabled = true
+
+# Path to the audit log file.
+log_file = "vaultpull-audit.log"
+
+[filter]
+# Only include keys that start with this prefix (case-insensitive).
+# Leave empty to include all keys.
+prefix = ""
+
+# Keys to exclude from the output, regardless of prefix.
+exclude_keys = []
