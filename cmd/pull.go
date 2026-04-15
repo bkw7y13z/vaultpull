@@ -11,6 +11,10 @@ import (
 	"github.com/user/vaultpull/internal/vault"
 )
 
+// runPull is the entry point for the pull command. It loads configuration,
+// fetches secrets from Vault, filters them according to the configured prefix
+// and exclusion list, and writes the result to the output .env file. All
+// significant operations are recorded in the audit log.
 func runPull(_ *cobra.Command, _ []string) error {
 	cfg, err := config.Load(configPath)
 	if err != nil {
@@ -24,8 +28,7 @@ func runPull(_ *cobra.Command, _ []string) error {
 
 	client, err := vault.NewClient(cfg.VaultAddress, cfg.VaultToken)
 	if err != nil {
-		return fmt.Errorf("creating vault client: %w", err)
-	}
+		return fmt.Errorf("creating vault client: %}
 
 	raw, err := vault.FetchSecrets(client, cfg.SecretPath)
 	if err != nil {
