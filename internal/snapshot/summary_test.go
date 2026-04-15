@@ -79,6 +79,31 @@ func TestSummarize_MultipleEntries_UniqueKeysMerged(t *testing.T) {
 	}
 }
 
+func TestSummarize_MultipleEntries_OldestAndLatestAt(t *testing.T) {
+	path := tmpPath(t)
+
+	oldest := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+	latest := time.Date(2024, 6, 1, 0, 0, 0, 0, time.UTC)
+	entries := []Entry{
+		{Checksum: "c1", Keys: []string{"A"}, CreatedAt: oldest},
+		{Checksum: "c2", Keys: []string{"B"}, CreatedAt: latest},
+	}
+	if err := save(path, entries); err != nil {
+		t.Fatalf("save: %v", err)
+	}
+
+	s, err := Summarize(path)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !s.OldestAt.Equal(oldest) {
+		t.Errorf("expected oldest %v, got %v", oldest, s.OldestAt)
+	}
+	if !s.LatestAt.Equal(latest) {
+		t.Errorf("expected latest %v, got %v", latest, s.LatestAt)
+	}
+}
+
 func TestSummary_Print(t *testing.T) {
 	s := &Summary{
 		TotalEntries:   3,
