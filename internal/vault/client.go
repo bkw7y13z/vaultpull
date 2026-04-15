@@ -73,6 +73,20 @@ func (c *Client) ReadSecrets(path string) (map[string]string, error) {
 	return result, nil
 }
 
+// WriteSecrets writes key-value pairs to the given KV v2 path.
+// Existing keys at the path not present in data will be preserved by Vault's
+// patch semantics; this performs a full write (replacing all keys at the path).
+func (c *Client) WriteSecrets(path string, data map[string]interface{}) error {
+	if len(data) == 0 {
+		return errors.New("no data provided to write")
+	}
+	_, err := c.vc.KVv2("secret").Put(nil, path, data)
+	if err != nil {
+		return fmt.Errorf("writing secret at path %q: %w", path, err)
+	}
+	return nil
+}
+
 // Namespace returns the configured namespace.
 func (c *Client) Namespace() string {
 	return c.namespace
