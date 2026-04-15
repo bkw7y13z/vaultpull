@@ -70,3 +70,11 @@ func TestFilterSecrets_PrefixAndExclude(t *testing.T) {
 		t.Error("expected APP_NAME in result")
 	}
 }
+
+func TestFilterSecrets_EmptyInput(t *testing.T) {
+	secrets := map[string]string{}
+	result := FilterSecrets(secrets, FilterOptions{Prefix: "APP_"})
+	if len(result) != 0 {
+		t.Errorf("expected 0 secrets for empty input, got %d", len(result))
+	}
+}
