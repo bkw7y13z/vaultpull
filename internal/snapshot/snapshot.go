@@ -53,7 +53,7 @@ func Save(path string, snap *Snapshot) error {
 // Add appends an entry, capping at maxEntries.
 func Add(path string, entry Entry) error {
 	snap, err := Load(path)
-	if err != nil && !os.IsNotExist(err) {
+	ifNotExist(err) {
 		return fmt.Errorf("load: %w", err)
 	}
 	snap.Entries = append(snap.Entries, entry)
@@ -74,4 +74,19 @@ func Latest(path string) (*Entry, error) {
 	}
 	e := snap.Entries[len(snap.Entries)-1]
 	return &e, nil
+}
+
+// FindByTag returns the most recent entry matching the given tag, or nil if none found.
+func FindByTag(path string, tag string) (*Entry, error) {
+	snap, err := Load(path)
+	if err != nil {
+		return nil, err
+	}
+	for i := len(snap.Entries) - 1; i >= 0; i-- {
+		if snap.Entries[i].Tag == tag {
+			e := snap.Entries[i]
+			return &e, nil
+		}
+	}
+	return nil, nil
 }
