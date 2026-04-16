@@ -10,75 +10,68 @@ import (
 
 const maxEntries = 100
 
-// Entry represents a single snapshot record.
+// Entry represents a single captured snapshot.
 type Entry struct {
-	Timestamp time.Time         `json:"timestamp"`
-	Checksum  string            `json:"checksum"`
-	Keys      []string          `json:"keys"`
-	Secrets   map[string]string `json:"secrets"`
-	Tag       string            `json:"tag,omitempty"`
-	TaggedAt  time.Time         `json:"tagged_at,omitempty"`
+	Checksum   string            `json:"checksum"`
+	Keys       []string          `json:"keys"`
+	CapturedAt time.Time         `json:"captured_at"`
+	Tag        string            `json:"tag,omitempty"`
+	Note       string            `json:"note,omitempty"`
+	Meta       map[string]string `json:"meta,omitempty"`
 }
 
-// Load reads all snapshot entries from the given file path.
-func Load(path string) ([]Entry, error) {
-	if path == "" {
-		return nil, errors.New("snapshot path must not be empty")
-	}
+// Snapshot holds a list of snapshot entries.
+type Snapshot struct {
+	Entries []Entry `json:"entries"`
+}
 
+// Load reads a snapshot from disk.
+func Load(path string) (*Snapshot, error) {
 	data, err := os.ReadFile(path)
-	if os.IsNotExist(err) {
-		return []Entry{}, nil
-	}
 	if err != nil {
-		return nil, fmt.Errorf("reading snapshot file: %w", err)
+		return &Snapshot{}, err
 	}
-
-	var entries []Entry
-	if err := json.Unmarshal(data, &entries); err != nil {
-		return nil, fmt.Errorf("parsing snapshot file: %w", err)
+	var snap Snapshot
+	if err := json.Unmarshal(data, &snap); err != nil {
+		return nil, fmt.Errorf("unmarshal snapshot: %w", err)
 	}
-
-	return entries, nil
+	return &snap, nil
 }
 
-// Save persists entries to the snapshot file, capping at maxEntries.
-func Save(path string, entries []Entry) error {
-	if len(entries) > maxEntries {
-		entries = entries[len(entries)-maxEntries:]
+// Save writes a snapshot to disk.
+func Save(path string, snap *Snapshot) error {
+	if snap == nil {
+		return errors.New("snapshot is nil")
 	}
-
-	data, err := json.Marshal(entries)
+	data, err := json.MarshalIndent(snap, "", "  ")
 	if err != nil {
-		return fmt.Errorf("marshalling snapshot: %w", err)
+		return fmt.Errorf("marshal snapshot: %w", err)
 	}
-
-	if err := os.WriteFile(path, data, 0600); err != nil {
-		return fmt.Errorf("writing snapshot: %w", err)
-	}
-
-	return nil
+	return os.WriteFile(path, data, 0600)
 }
 
-// Add appends a new entry and saves the snapshot.
+// Add appends an entry, capping at maxEntries.
 func Add(path string, entry Entry) error {
-	entries, err := Load(path)
-	if err != nil {
-		return err
+	snap, err := Load(path)
+	if err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("load: %w", err)
 	}
-	entries = append(entries, entry)
-	return Save(path, entries)
+	snap.Entries = append(snap.Entries, entry)
+	if len(snap.Entries) > maxEntries {
+		snap.Entries = snap.Entries[len(snap.Entries)-maxEntries:]
+	}
+	return Save(path, snap)
 }
 
-// Latest returns the most recent snapshot entry, if any.
+// Latest returns the most recent entry, or nil if empty.
 func Latest(path string) (*Entry, error) {
-	entries, err := Load(path)
+	snap, err := Load(path)
 	if err != nil {
 		return nil, err
 	}
-	if len(entries) == 0 {
+	if len(snap.Entries) == 0 {
 		return nil, nil
 	}
-	e := entries[len(entries)-1]
+	e := snap.Entries[len(snap.Entries)-1]
 	return &e, nil
 }
