@@ -16,12 +16,16 @@ type PruneOptions struct {
 
 // PruneResult summarises what was removed.
 type PruneResult struct {
-	Removed int
+	Removed  int
 	Retained int
 }
 
 // Prune removes old entries from the snapshot file at path according to opts.
 // The file is rewritten in place. If the file does not exist, Prune is a no-op.
+//
+// Entries are sorted newest-first before pruning. An entry is retained if it
+// falls within the KeepLast count OR its timestamp is within MaxAge. When both
+// MaxAge and KeepLast are zero, all entries are retained.
 func Prune(path string, opts PruneOptions) (PruneResult, error) {
 	if path == "" {
 		return PruneResult{}, fmt.Errorf("snapshot path must not be empty")
