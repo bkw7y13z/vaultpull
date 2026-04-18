@@ -99,7 +99,24 @@ func TestWriteEnvFile_EmptySecrets(t *testing.T) {
 	if err != nil {
 		t.Fatalf("could not read output file: %v", err)
 	}
-	if strings.TrimSpace(string(data)) != "" {
+	if len(strings.TrimSpace(string(data))) != 0 {
 		t.Errorf("expected empty file for empty secrets, got: %s", data)
+	}
+}
+
+func TestWriteEnvFile_FilePermissions(t *testing.T) {
+	tmp := filepath.Join(t.TempDir(), ".env")
+
+	err := WriteEnvFile(map[string]string{"KEY": "val"}, WriteOptions{OutputPath: tmp, Overwrite: true})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	info, err := os.Stat(tmp)
+	if err != nil {
+		t.Fatalf("could not stat output file: %v", err)
+	}
+	if info.Mode().Perm() != 0600 {
+		t.Errorf("expected file permissions 0600, got %v", info.Mode().Perm())
 	}
 }
