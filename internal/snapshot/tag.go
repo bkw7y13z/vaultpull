@@ -75,3 +75,44 @@ func FindByTag(snapshotPath, label string) (*Entry, error) {
 
 	return nil, fmt.Errorf("no snapshot entry found with tag %q", label)
 }
+
+// RemoveTag clears the tag and tagged timestamp from the snapshot entry
+// identified by the given checksum.
+func RemoveTag(snapshotPath, checksum string) error {
+	if snapshotPath == "" {
+		return errors.New("snapshot path must not be empty")
+	}
+	if checksum == "" {
+		return errors.New("checksum must not be empty")
+	}
+
+	entries, err := Load(snapshotPath)
+	if err != nil {
+		return fmt.Errorf("loading snapshot: %w", err)
+	}
+
+	found := false
+	for i, e := range entries {
+		if e.Checksum == checksum {
+			entries[i].Tag = ""
+			entries[i].TaggedAt = time.Time{}
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return fmt.Errorf("no snapshot entry found with checksum %q", checksum)
+	}
+
+	data, err := json.Marshal(entries)
+	if err != nil {
+		return fmt.Errorf("marshalling snapshot: %w", err)
+	}
+
+	if err := os.WriteFile(snapshotPath, data, 0600); err != nil {
+		return fmt.Errorf("writing snapshot: %w", err)
+	}
+
+	return nil
+}
