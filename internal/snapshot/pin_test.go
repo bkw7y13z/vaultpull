@@ -54,6 +54,23 @@ func TestPin_Success(t *testing.T) {
 	}
 }
 
+func TestPin_AlreadyPinned(t *testing.T) {
+	p := writePinSnapshot(t, []Entry{{Checksum: "aaa", CreatedAt: time.Now()}})
+	if err := Pin(p, "aaa", "first pin"); err != nil {
+		t.Fatalf("first pin: %v", err)
+	}
+	if err := Pin(p, "aaa", "second pin"); err != nil {
+		t.Fatalf("second pin should succeed: %v", err)
+	}
+	ok, err := IsPinned(p, "aaa")
+	if err != nil {
+		t.Fatalf("IsPinned: %v", err)
+	}
+	if !ok {
+		t.Fatal("expected entry to remain pinned")
+	}
+}
+
 func TestUnpin_Success(t *testing.T) {
 	p := writePinSnapshot(t, []Entry{{Checksum: "bbb", CreatedAt: time.Now()}})
 	if err := Pin(p, "bbb", "reason"); err != nil {
