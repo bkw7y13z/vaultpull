@@ -78,3 +78,17 @@ func TestFilterSecrets_EmptyInput(t *testing.T) {
 		t.Errorf("expected 0 secrets for empty input, got %d", len(result))
 	}
 }
+
+func TestFilterSecrets_ValuesPreserved(t *testing.T) {
+	secrets := map[string]string{
+		"db_host": "localhost",
+		"db_port": "5432",
+	}
+	result := FilterSecrets(secrets, FilterOptions{})
+	if result["DB_HOST"] != "localhost" {
+		t.Errorf("expected DB_HOST value 'localhost', got %q", result["DB_HOST"])
+	}
+	if result["DB_PORT"] != "5432" {
+		t.Errorf("expected DB_PORT value '5432', got %q", result["DB_PORT"])
+	}
+}
