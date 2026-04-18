@@ -92,3 +92,10 @@ func TestFilterSecrets_ValuesPreserved(t *testing.T) {
 		t.Errorf("expected DB_PORT value '5432', got %q", result["DB_PORT"])
 	}
 }
+
+func TestFilterSecrets_NilInput(t *testing.T) {
+	result := FilterSecrets(nil, FilterOptions{})
+	if len(result) != 0 {
+		t.Errorf("expected 0 secrets for nil input, got %d", len(result))
+	}
+}
