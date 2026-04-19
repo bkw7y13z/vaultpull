@@ -73,6 +73,18 @@ func TestFreeze_Success(t *testing.T) {
 	}
 }
 
+func TestFreeze_AlreadyFrozen(t *testing.T) {
+	dir := t.TempDir()
+	path := writeFreezeSnapshot(t, dir)
+	if err := Freeze(path, "abc123", "alice", "first freeze"); err != nil {
+		t.Fatalf("unexpected error on first freeze: %v", err)
+	}
+	err := Freeze(path, "abc123", "bob", "second freeze")
+	if err == nil || err.Error() != "entry is already frozen" {
+		t.Fatalf("expected already frozen error, got %v", err)
+	}
+}
+
 func TestGetFreeze_RecordFields(t *testing.T) {
 	dir := t.TempDir()
 	path := writeFreezeSnapshot(t, dir)
