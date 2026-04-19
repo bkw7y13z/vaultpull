@@ -42,6 +42,17 @@ func TestRunGC_Success(t *testing.T) {
 	}
 }
 
+// TestRunGC_EmptySnapshot verifies that running gc on a snapshot with no
+// entries succeeds without error and performs no deletions.
+func TestRunGC_EmptySnapshot(t *testing.T) {
+	path := writeGCSnap(t, []snapshot.Entry{})
+
+	rootCmd.SetArgs([]string{"gc", "--snapshot", path, "--max-age", "24h"})
+	if err := rootCmd.Execute(); err != nil {
+		t.Fatalf("unexpected error on empty snapshot: %v", err)
+	}
+}
+
 func TestGCCmd_RegisteredOnRoot(t *testing.T) {
 	for _, c := range rootCmd.Commands() {
 		if c.Use == "gc" {
