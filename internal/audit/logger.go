@@ -80,3 +80,8 @@ func (l *Logger) Failure(vaultPath, outputFile string, reason error) error {
 		Message:    reason.Error(),
 	})
 }
+
+// Enabled reports whether the logger is active (i.e. has a non-empty path).
+func (l *Logger) Enabled() bool {
+	return l.path != ""
+}
