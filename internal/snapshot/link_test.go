@@ -79,6 +79,9 @@ func TestAddLink_Success(t *testing.T) {
 	if links[0].Reason != "supersedes" {
 		t.Errorf("expected reason=supersedes, got %s", links[0].Reason)
 	}
+	if links[0].CreatedBy != "alice" {
+		t.Errorf("expected createdBy=alice, got %s", links[0].CreatedBy)
+	}
 }
 
 func TestGetLinks_EmptyPath(t *testing.T) {
