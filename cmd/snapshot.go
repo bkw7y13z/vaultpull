@@ -47,12 +47,23 @@ func runSnapshot(cmd *cobra.Command, args []string) error {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 	fmt.Fprintln(w, "TIMESTAMP\tNAMESPACE\tKEYS\tCHECKSUM")
 	for _, e := range s.Entries {
+		checksum := formatChecksum(e.Checksum)
 		fmt.Fprintf(w, "%s\t%s\t%d\t%s\n",
 			e.Timestamp.Format("2006-01-02 15:04:05"),
 			e.Namespace,
 			len(e.Keys),
-			e.Checksum[:8],
+			checksum,
 		)
 	}
 	return w.Flush()
+}
+
+// formatChecksum returns a shortened display version of a checksum string.
+// If the checksum is shorter than 8 characters, the full value is returned
+// to avoid a panic on slice bounds out of range.
+func formatChecksum(checksum string) string {
+	if len(checksum) < 8 {
+		return checksum
+	}
+	return checksum[:8]
 }
