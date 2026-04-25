@@ -69,6 +69,29 @@ func TestLogger_Appends(t *testing.T) {
 	}
 }
 
+func TestLogger_SuccessRecordsPath(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "audit.log")
+	l := NewLogger(path)
+
+	const secretPath = "/secret/app"
+	const destFile = ".env"
+
+	if err := l.Success(secretPath, destFile, 3); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	entries := readEntries(t, path)
+	if len(entries) != 1 {
+		t.Fatalf("expected 1 entry, got %d", len(entries))
+	}
+	if entries[0].Path != secretPath {
+		t.Errorf("expected path=%s, got %s", secretPath, entries[0].Path)
+	}
+	if entries[0].Dest != destFile {
+		t.Errorf("expected dest=%s, got %s", destFile, entries[0].Dest)
+	}
+}
+
 func readEntries(t *testing.T, path string) []Entry {
 	t.Helper()
 	f, err := os.Open(path)
